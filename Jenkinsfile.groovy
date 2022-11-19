@@ -53,18 +53,53 @@ pipeline {
             }
         }
 
-
-
-
-        stage("Checkout Pipeline Code") {
+        stage("Deploy") {
+            when {
+                expression {
+                    return PROCEED && deploymentBranches.any { it == env.BRANCH_NAME }  && env.ENVIRONMENT
+                }
+            }
             steps {
-                checkout scm
+                container('maven') {
+                    script {
+                        checkoutscm
+                    }
+                }
             }
         }
 
-        stage("Clean workspace") {
-            steps {
+
+
+
+
+        post {
+            always {
+                script  {
+                    println "Generating artifacts to store what deployment happened"
+
+                    environmentDeploymentConfigs.each { envDeploymentConfigs ->
+                        def plannedComponents = [:]
+                        envDeploymentConfigs.value.each { deploymentConfigItem ->
+                            plannedComponents=[]
+                            deploymentConfigItem.components.each { component ->
+                                plannedComponents << component
+                            }
+                        }
+                        writeJSON json: deployedComponents[envDeploymentConfigs.key]?:[:], file: "output/deployed-components-${envDeploymentConfigs.key}.json", pretty: 1
+                        writeJSON json: plannedComponents, file: "output/planned-components-${envDeploymentConfigs.key}.json", pretty: 1
+                    }
+                }
+                archiveArtifacts(allowEmptyArchive: true, artifacts: 'output/*.json', followSymlinks: false)
                 cleanWs cleanWhenAborted: false, cleanWhenFailure: false, cleanWhenNotBuilt: false, cleanWhenUnstable: false
+            }
+            success {
+                println "Successful"
+            }
+            unstable {
+                println "Unstable"
+            }
+            failure {
+                println "Failed"
             }
         }
     }
