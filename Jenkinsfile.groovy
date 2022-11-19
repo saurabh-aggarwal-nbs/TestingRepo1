@@ -11,10 +11,9 @@ pipeline {
     agent any
     parameters {
 
-        string(defaultValue: "dev", description: 'set env example: dev,uat', name: 'ENVIRONMENT')
+//        string(defaultValue: "dev", description: 'set env example: dev,uat', name: 'ENVIRONMENT')
 
-        choice(name: 'ENVIRONMENT', choices: ENVIRONMENT_NAMES, description: 'Select an environment for deployment')
-
+//        choice(name: 'ENVIRONMENT', choices: ENVIRONMENT_NAMES, description: 'Select an environment for deployment')
         extendedChoice (description: 'Select an environment for deployment', multiSelectDelimiter: ',',
                 name: 'ENVIRONMENT', quoteValue: false, defaultValue: "", saveJSONParameterToFile: false, type: 'PT_SINGLE_SELECT',
                 value: ENVIRONMENT_NAMES, visibleItemCount: 50)
