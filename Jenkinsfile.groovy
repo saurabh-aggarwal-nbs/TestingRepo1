@@ -172,29 +172,18 @@ def deployArtifact(component) {
     def repoGlobalTokens = []
     println "checking out " + component.name
     component.checkoutInfo = checkoutRepository(component)
-    if(component.checkoutInfo.GIT_COMMIT == component.fromCommit)
-    {
-        println "Commit ${component.checkoutInfo.GIT_COMMIT} is already deployed, skipping deployment for ${component.name} (${env.ENVIRONMENT})"
-        component.deployed = false
 
-        if(component.tag)
-        {
-
-            println "Commit has been tagged since last deployment, Updating deployment tracking with latest information"
-            def date = new Date()
-            def sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss")
-            def deployedOn =sdf.format(date)
-
-            component.deployedOn =  deployedOn
-            component.tag = component.tag
-            component.commit = component.commit ?: component.checkoutInfo.GIT_COMMIT
-            component.branch = component.branch ?: component.checkoutInfo.GIT_BRANCH
-        }
-        return
-    }
+    def date = new Date()
+    def sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss")
+    def deployedOn =sdf.format(date)
+    component.deployedOn =  deployedOn
+    component.tag = component.tag
+    component.commit = component.checkoutInfo.GIT_COMMIT
+    component.branch = component.checkoutInfo.GIT_BRANCH
     component.trackDeployment = true
     println "deploying component ${component.name}"
     /// do your deployment step here
+
     component.deployed = true
 }
 
