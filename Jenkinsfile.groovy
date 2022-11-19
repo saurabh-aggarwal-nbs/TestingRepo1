@@ -2,7 +2,7 @@ def doingExactClone = false
 def exactClone = "EXACT CLONE"
 def selectedComponents = []
 def sourceEnvDeployments = []
-static String ENVIRONMENT_NAMES = "dev,test,pre,prd"
+String ENVIRONMENT_NAMES = "dev,test,pre,prd"
 def deploymentBranch = "main"
 
 
@@ -34,7 +34,7 @@ pipeline {
 
         stage("Select Components") {
             def sourceConfig = readJSON file: "envs/test.json"
-            def environment = sourceConfig.environment
+           // def environment = sourceConfig.environment
                     // process release config to get delta
             def baseline  = readJSON file: "envs/baseline.json"
             sourceEnvDeployments = baseline.environment;
