@@ -1,0 +1,12 @@
+{
+  "environment": "dev ",
+  "components": [
+    {
+      "name": "TestB",
+      "commit": "",
+      "tag": "",
+      "branch": "main"
+    }
+  ]
+}
+var watch =
