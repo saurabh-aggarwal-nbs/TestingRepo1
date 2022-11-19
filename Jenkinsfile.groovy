@@ -1,3 +1,7 @@
+import java.text.SimpleDateFormat
+import groovy.json.*
+import java.time.LocalDateTime
+
 def doingExactClone = false
 def exactClone = "EXACT CLONE"
 def selectedComponents = []
@@ -50,6 +54,36 @@ pipeline {
                     environmentDeploymentConfigs[deploymentEnv] = environmentConfigs
                     println "environmentDeploymentConfigs has data: ${environmentDeploymentConfigs}"
 
+                }
+            }
+        }
+
+        stage("Deploy") {
+            when {
+                expression {
+                    return deploymentBranches.any { it == env.BRANCH_NAME }  && env.ENVIRONMENT
+                }
+            }
+            steps {
+                script {
+                    environmentDeploymentConfigs.each { envDeploymentConfigs ->
+                        stage("Deploying environment ${envDeploymentConfigs.key}") {
+                            deployedComponents[envDeploymentConfigs.key] = [:]
+                            envDeploymentConfigs.value.each { deploymentConfigItem ->
+                                stage("${deploymentConfigItem}") {
+                                    deployedComponents[envDeploymentConfigs.key] = []
+                                    deploymentConfigItem.components.each { component ->
+                                            dir("${component.name}") {
+                                                deployArtifact(component)
+                                                if (component.deployed) {
+                                                    deployedComponents[envDeploymentConfigs.key] << component
+                                                }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -131,4 +165,35 @@ def identifyTenantDeployment(components, envReleases){
         componentsToDeploy << component
     }
     return componentsToDeploy
+}
+
+def deployArtifact(component) {
+    def envTokens = []
+    def repoGlobalTokens = []
+    println "checking out " + component.name
+    component.checkoutInfo = checkoutRepository(component)
+    if(component.checkoutInfo.GIT_COMMIT == component.fromCommit)
+    {
+        println "Commit ${component.checkoutInfo.GIT_COMMIT} is already deployed, skipping deployment for ${component.name} (${env.ENVIRONMENT})"
+        component.deployed = false
+
+        if(component.tag)
+        {
+
+            println "Commit has been tagged since last deployment, Updating deployment tracking with latest information"
+            def date = new Date()
+            def sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss")
+            def deployedOn =sdf.format(date)
+
+            component.deployedOn =  deployedOn
+            component.tag = component.tag
+            component.commit = component.commit ?: component.checkoutInfo.GIT_COMMIT
+            component.branch = component.branch ?: component.checkoutInfo.GIT_BRANCH
+        }
+        return
+    }
+    component.trackDeployment = true
+    println "deploying component ${component.name}"
+    /// do your deployment step here
+    component.deployed = true
 }
