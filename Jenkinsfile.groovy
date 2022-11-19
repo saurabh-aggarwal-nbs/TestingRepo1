@@ -20,32 +20,32 @@ pipeline {
     }
     stages {
 
-        stage("Identify changes"){
+        stage("Identify changes") {
             steps {
                 script {
 
                     println "envs/${env.ENVIRONMENT}.json"
-                    def environmentConfigs=[]
-                        def desiredDeployment = readJSON file: "envs/${env.ENVIRONMENT}.json"
-                        deploymentEnv = desiredDeployment.environment
+                    def environmentConfigs = []
+                    def desiredDeployment = readJSON file: "envs/${env.ENVIRONMENT}.json"
+                    deploymentEnv = desiredDeployment.environment
 
-                        def baseline = readJSON file: "deploymentdetails/baseline.json"
-                        println "baseline ${baseline}       "
+                    def baseline = readJSON file: "deploymentdetails/baseline.json"
+                    println "baseline ${baseline}       "
 
-                        def envReleases = baseline.deploymentEnv
-                        def components = identifyTenantDeployment(desiredDeployment.components, envReleases)
+                    def envReleases = baseline.deploymentEnv
+                    def components = identifyTenantDeployment(desiredDeployment.components, envReleases)
 
-                        def tenantDeploymentConfig = [
-                                "components": []
-                        ]
-                        if (desiredDeployment.components != null && desiredDeployment.components.size() > 0) {
-                            def batchIndex = 0
-                            def index = 0
-                            desiredDeployment.components.findAll { c -> c.action != "none" }.each {  component ->
-                                tenantDeploymentConfig.components << component
-                            }
+                    def tenantDeploymentConfig = [
+                            "components": []
+                    ]
+                    if (desiredDeployment.components != null && desiredDeployment.components.size() > 0) {
+                        def batchIndex = 0
+                        def index = 0
+                        desiredDeployment.components.findAll { c -> c.action != "none" }.each { component ->
+                            tenantDeploymentConfig.components << component
                         }
-                        environmentConfigs << tenantDeploymentConfig
+                    }
+                    environmentConfigs << tenantDeploymentConfig
                     environmentDeploymentConfigs[deploymentEnv] = environmentConfigs
                     println "environmentDeploymentConfigs has data: ${environmentDeploymentConfigs}"
 
@@ -56,7 +56,7 @@ pipeline {
         stage("Deploy") {
             when {
                 expression {
-                    return PROCEED && deploymentBranches.any { it == env.BRANCH_NAME }  && env.ENVIRONMENT
+                    return PROCEED && deploymentBranches.any { it == env.BRANCH_NAME } && env.ENVIRONMENT
                 }
             }
             steps {
@@ -68,39 +68,38 @@ pipeline {
             }
         }
 
+    }
 
 
 
+    post {
+        always {
+            script  {
+                println "Generating artifacts to store what deployment happened"
 
-        post {
-            always {
-                script  {
-                    println "Generating artifacts to store what deployment happened"
-
-                    environmentDeploymentConfigs.each { envDeploymentConfigs ->
-                        def plannedComponents = [:]
-                        envDeploymentConfigs.value.each { deploymentConfigItem ->
-                            plannedComponents=[]
-                            deploymentConfigItem.components.each { component ->
-                                plannedComponents << component
-                            }
+                environmentDeploymentConfigs.each { envDeploymentConfigs ->
+                    def plannedComponents = [:]
+                    envDeploymentConfigs.value.each { deploymentConfigItem ->
+                        plannedComponents=[]
+                        deploymentConfigItem.components.each { component ->
+                            plannedComponents << component
                         }
-                        writeJSON json: deployedComponents[envDeploymentConfigs.key]?:[:], file: "output/deployed-components-${envDeploymentConfigs.key}.json", pretty: 1
-                        writeJSON json: plannedComponents, file: "output/planned-components-${envDeploymentConfigs.key}.json", pretty: 1
                     }
+                    writeJSON json: deployedComponents[envDeploymentConfigs.key]?:[:], file: "output/deployed-components-${envDeploymentConfigs.key}.json", pretty: 1
+                    writeJSON json: plannedComponents, file: "output/planned-components-${envDeploymentConfigs.key}.json", pretty: 1
                 }
-                archiveArtifacts(allowEmptyArchive: true, artifacts: 'output/*.json', followSymlinks: false)
-                cleanWs cleanWhenAborted: false, cleanWhenFailure: false, cleanWhenNotBuilt: false, cleanWhenUnstable: false
             }
-            success {
-                println "Successful"
-            }
-            unstable {
-                println "Unstable"
-            }
-            failure {
-                println "Failed"
-            }
+            archiveArtifacts(allowEmptyArchive: true, artifacts: 'output/*.json', followSymlinks: false)
+            cleanWs cleanWhenAborted: false, cleanWhenFailure: false, cleanWhenNotBuilt: false, cleanWhenUnstable: false
+        }
+        success {
+            println "Successful"
+        }
+        unstable {
+            println "Unstable"
+        }
+        failure {
+            println "Failed"
         }
     }
 }
