@@ -11,9 +11,11 @@ def environmentDeploymentConfigs = [:]
 
 parameters {
 
-    extendedChoice (description: 'Select an environment for deployment', multiSelectDelimiter: ',',
-            name: 'ENVIRONMENT', quoteValue: false, defaultValue: "", saveJSONParameterToFile: false, type: 'PT_SINGLE_SELECT',
-            value: GlobalVars.ENVIRONMENT_NAMES, visibleItemCount: 50)
+    string(defaultValue: "dev", description: 'set env example: dev,uat', name: 'ENVIRONMENT')
+
+//    extendedChoice (description: 'Select an environment for deployment', multiSelectDelimiter: ',',
+//            name: 'ENVIRONMENT', quoteValue: false, defaultValue: "", saveJSONParameterToFile: false, type: 'PT_SINGLE_SELECT',
+//            value: GlobalVars.ENVIRONMENT_NAMES, visibleItemCount: 50)
 }
 
 pipeline {
