@@ -34,47 +34,45 @@ pipeline {
 
         stage("Select Components") {
             steps {
-                def sourceConfig = readJSON file: "envs/test.json"
-               // def environment = sourceConfig.environment
-                        // process release config to get delta
-                def baseline  = readJSON file: "envs/baseline.json"
-                sourceEnvDeployments = baseline.environment;
-                def componentNames = []
-                def values = [exactClone]
-                values.addAll(sourceEnvDeployments.collect { it.name })
-                print "Deployed Items: "
-                println values
+                script {
+                    def sourceConfig = readJSON file: "envs/test.json"
+                    // def environment = sourceConfig.environment
+                    // process release config to get delta
+                    def baseline = readJSON file: "envs/baseline.json"
+                    sourceEnvDeployments = baseline.environment;
+                    def componentNames = []
+                    def values = [exactClone]
+                    values.addAll(sourceEnvDeployments.collect { it.name })
+                    print "Deployed Items: "
+                    println values
 
-                timeout(time: 300, unit: 'SECONDS')
-                {
-                    componentNames = input(
-                    message: 'Please select the components to update on target environment', ok: 'Next',
-                    parameters: [
-                        extendedChoice(
-                        defaultValue: 'All',
-                        description: '',
-                        multiSelectDelimiter: ',',
-                        name: 'COMPONENTS',
-                        quoteValue: false,
-                        saveJSONParameterToFile: false,
-                        type: 'PT_CHECKBOX',
-                        value: values.join(','),
-                        visibleItemCount: 10)]).split(',')
-                }
-                if (componentNames.contains(exactClone))
-                {
-                    selectedComponents = componentNames.collect { it.name != exactClone}
-                }
-                else
-                {
-                    componentNames.each { componentName ->
-                        selectedComponents << componentName
+                    timeout(time: 300, unit: 'SECONDS')
+                            {
+                                componentNames = input(
+                                        message: 'Please select the components to update on target environment', ok: 'Next',
+                                        parameters: [
+                                                extendedChoice(
+                                                        defaultValue: 'All',
+                                                        description: '',
+                                                        multiSelectDelimiter: ',',
+                                                        name: 'COMPONENTS',
+                                                        quoteValue: false,
+                                                        saveJSONParameterToFile: false,
+                                                        type: 'PT_CHECKBOX',
+                                                        value: values.join(','),
+                                                        visibleItemCount: 10)]).split(',')
+                            }
+                    if (componentNames.contains(exactClone)) {
+                        selectedComponents = componentNames.collect { it.name != exactClone }
+                    } else {
+                        componentNames.each { componentName ->
+                            selectedComponents << componentName
+                        }
                     }
+
+                    print "Selected components to copy: "
+                    println selectedComponents
                 }
-
-                print "Selected components to copy: "
-                println selectedComponents
-
             }
         }
 
