@@ -32,7 +32,7 @@ pipeline {
             }
         }
 
-        stage('Select Components') {
+        stage("Select Components") {
             def sourceConfig = readJSON file: "envs/test.json"
             def environment = sourceConfig.environment
                     // process release config to get delta
