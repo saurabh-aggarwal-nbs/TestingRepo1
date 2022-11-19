@@ -61,7 +61,7 @@ pipeline {
         stage("Deploy") {
             when {
                 expression {
-                    return deploymentBranches.any { it == env.BRANCH_NAME }  && env.ENVIRONMENT
+                    env.ENVIRONMENT
                 }
             }
             steps {
