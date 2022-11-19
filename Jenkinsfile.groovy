@@ -55,11 +55,11 @@ pipeline {
         }
 
         stage("Deploy") {
-            when {
-                expression {
-                    return PROCEED && deploymentBranches.any { it == env.BRANCH_NAME } && env.ENVIRONMENT
-                }
-            }
+//            when {
+//                expression {
+//                    return  && deploymentBranches.any { it == env.BRANCH_NAME } && env.ENVIRONMENT
+//                }
+//            }
             steps {
                 container('maven') {
                     script {
