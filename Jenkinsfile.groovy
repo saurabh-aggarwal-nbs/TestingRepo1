@@ -49,7 +49,7 @@ pipeline {
                         environmentConfigs << tenantDeploymentConfig
                     }
                     environmentDeploymentConfigs[deploymentEnv] = environmentConfigs
-                    println "environmentDeploymentConfigs has data: ${deploymentConfig.ucasServiceEnv}"
+                    println "environmentDeploymentConfigs has data: ${environmentDeploymentConfigs}"
 
                 }
             }
@@ -76,13 +76,18 @@ pipeline {
 
 
 def identifyTenantDeployment(components, envReleases){
+    println "components has data: ${components}   and envReleases has data :${envReleases}"
+
     def componentsToDeploy = []
     components.each { component ->
         def trackingEntryName = component.name
         def envReleaseEntry = envReleases.find {it.name == trackingEntryName }
+        println "envReleaseEntry has data: ${envReleaseEntry} "
 
         if(envReleaseEntry) {
-            def envComponentDeployment = new JsonSlurper().parseText(envReleaseEntry.value)
+            def envComponentDeployment = envReleaseEntry.value
+
+//            def envComponentDeployment = new JsonSlurper().parseText(envReleaseEntry.value)
             if((component.tag && component.tag != envComponentDeployment.tag)
                     || (component.commit && component.commit != envComponentDeployment.commit)
                     || (!component.tag && !component.commit && component.branch == envComponentDeployment.branch)
