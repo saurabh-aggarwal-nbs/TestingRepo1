@@ -30,7 +30,7 @@ pipeline {
                         deploymentEnv = desiredDeployment.environment
 
                         def baseline = readJSON file: "deploymentdetails/baseline.json"
-                        println "baseline ${baseline}.json"
+                        println "baseline ${baseline}       "
 
                         def envReleases = baseline.deploymentEnv
                         def components = identifyTenantDeployment(desiredDeployment.components, envReleases)
