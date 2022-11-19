@@ -54,24 +54,7 @@ pipeline {
             }
         }
 
-        stage("Deploy") {
-//            when {
-//                expression {
-//                    return  && deploymentBranches.any { it == env.BRANCH_NAME } && env.ENVIRONMENT
-//                }
-//            }
-            steps {
-                container('maven') {
-                    script {
-                        checkoutscm
-                    }
-                }
-            }
-        }
-
     }
-
-
 
     post {
         always {
@@ -90,7 +73,7 @@ pipeline {
                     writeJSON json: plannedComponents, file: "output/planned-components-${envDeploymentConfigs.key}.json", pretty: 1
                 }
             }
-            archiveArtifacts(allowEmptyArchive: true, artifacts: 'output/*.json', followSymlinks: false)
+//            archiveArtifacts(allowEmptyArchive: true, artifacts: 'output/*.json', followSymlinks: false)
             cleanWs cleanWhenAborted: false, cleanWhenFailure: false, cleanWhenNotBuilt: false, cleanWhenUnstable: false
         }
         success {
