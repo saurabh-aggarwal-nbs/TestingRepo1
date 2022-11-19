@@ -26,8 +26,8 @@ pipeline {
             steps {
                 script {
 
-                    println "envs/${env.ENVIRONMENT}.json"
-                    def envFiles = findFiles(glob: "envs/${env.ENVIRONMENT}.json")
+                    println "envs/${ENVIRONMENT}.json"
+                    def envFiles = findFiles(glob: "envs/${ENVIRONMENT}.json")
                     def environmentConfigs=[]
                     envFiles.each { tenantFile ->
                         def commonCfg = readJSON file: "envs/config.json"
