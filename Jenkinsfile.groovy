@@ -21,9 +21,7 @@ parameters {
 }
 
 pipeline {
-    agent {
-        any
-    }
+    agent any
     stages {
         stage("Checkout Pipeline Code") {
             steps {
