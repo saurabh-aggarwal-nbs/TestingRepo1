@@ -17,7 +17,7 @@ pipeline {
 
         extendedChoice (description: 'Select an environment for deployment', multiSelectDelimiter: ',',
                 name: 'ENVIRONMENT', quoteValue: false, defaultValue: "", saveJSONParameterToFile: false, type: 'PT_SINGLE_SELECT',
-                value: ENVIRONMENT_NAMES, visibleItemCount: 50)50
+                value: ENVIRONMENT_NAMES, visibleItemCount: 50)
     }
     stages {
 
