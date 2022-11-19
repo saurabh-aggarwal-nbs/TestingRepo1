@@ -28,7 +28,7 @@ pipeline {
                     def envFiles = findFiles(glob: "envs/${env.ENVIRONMENT}.json")
                     def environmentConfigs=[]
                     envFiles.each { tenantFile ->
-                        def commonCfg = readJSON file: "envs/config.json"
+                        def commonCfg = readJSON file: "config.json"
                         def desiredDeployment = merge(commonCfg, readJSON(file: tenantFile.path))
                         deploymentEnv = desiredDeployment.environment
 
