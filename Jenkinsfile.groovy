@@ -32,7 +32,6 @@ pipeline {
             }
         }
 
-
         stage('Select Components') {
             def sourceConfig = readJSON file: "envs/test.json"
             def environment = sourceConfig.environment
