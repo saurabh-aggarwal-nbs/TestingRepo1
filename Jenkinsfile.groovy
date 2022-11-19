@@ -35,7 +35,7 @@ pipeline {
                     def sourceConfig = readJSON file: "envs/test.json"
                     // def environment = sourceConfig.environment
                     // process release config to get delta
-                    def baseline = readJSON file: "envs/baseline.json"
+                    def baseline = readJSON file: "envs/dev.json"
                     sourceEnvDeployments = baseline.environment;
                     def componentNames = []
                     def values = [exactClone]
