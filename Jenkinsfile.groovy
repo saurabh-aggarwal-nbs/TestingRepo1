@@ -6,6 +6,7 @@ String ENVIRONMENT_NAMES = "dev,test,pre,prd"
 def deploymentBranch = "main"
 def deploymentEnv = "main"
 def environmentDeploymentConfigs = [:]
+def deployedComponents = [:]
 
 pipeline {
     agent any
