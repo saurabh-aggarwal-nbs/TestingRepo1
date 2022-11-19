@@ -11,11 +11,11 @@ def environmentDeploymentConfigs = [:]
 
 parameters {
 
-    string(defaultValue: "dev", description: 'set env example: dev,uat', name: 'ENVIRONMENT')
+    string(defaultValue: "dev", description: 'set env example: dev,uat', name: 'ENVIRONMENT1')
 
-//    extendedChoice (description: 'Select an environment for deployment', multiSelectDelimiter: ',',
-//            name: 'ENVIRONMENT', quoteValue: false, defaultValue: "", saveJSONParameterToFile: false, type: 'PT_SINGLE_SELECT',
-//            value: GlobalVars.ENVIRONMENT_NAMES, visibleItemCount: 50)
+    extendedChoice (description: 'Select an environment for deployment', multiSelectDelimiter: ',',
+            name: 'ENVIRONMENT', quoteValue: false, defaultValue: "", saveJSONParameterToFile: false, type: 'PT_SINGLE_SELECT',
+            value: ENVIRONMENT_NAMES, visibleItemCount: 50)50
 }
 
 pipeline {
@@ -26,8 +26,8 @@ pipeline {
             steps {
                 script {
 
-                    println "envs/${ENVIRONMENT}.json"
-                    def envFiles = findFiles(glob: "envs/${ENVIRONMENT}.json")
+                    println "${env} -  - -- - -envs/${env.ENVIRONMENT}.json"
+                    def envFiles = findFiles(glob: "envs/${env.ENVIRONMENT}.json")
                     def environmentConfigs=[]
                     envFiles.each { tenantFile ->
                         def commonCfg = readJSON file: "envs/config.json"
