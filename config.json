@@ -1,5 +1,4 @@
 {
     "instance": "notprod",
-    "allEnvironments": ["dev"]
-  }
+    "allEnvironments": ["dev","test","pre","prod"]
 }

@@ -4,75 +4,65 @@ def selectedComponents = []
 def sourceEnvDeployments = []
 String ENVIRONMENT_NAMES = "dev,test,pre,prd"
 def deploymentBranch = "main"
+def deploymentEnv = "main"
+def environmentDeploymentConfigs = [:]
 
 
 
 parameters {
-    extendedChoice (description: 'Select an application to copy environment configuration', multiSelectDelimiter: ',',
-        name: 'APPLICATION_NAME', defaultValue: "", quoteValue: false, saveJSONParameterToFile: false, type: 'PT_SINGLE_SELECT',
-        value: "${APIGEE_APPLICATION_NAMES}", visibleItemCount: 50)
-    extendedChoice (description: 'Select source environment', multiSelectDelimiter: ',',
-        name: 'SOURCE_ENVIRONMENT', quoteValue: false, defaultValue: "", saveJSONParameterToFile: false, type: 'PT_SINGLE_SELECT',
-        value: "${ENVIRONMENT_NAMES}", visibleItemCount: 50)
 
-    extendedChoice (description: 'Select target environment', multiSelectDelimiter: ',',
-        name: 'TARGET_ENVIRONMENT', quoteValue: false, defaultValue: "", saveJSONParameterToFile: false, type: 'PT_SINGLE_SELECT',
-        value: "${ENVIRONMENT_NAMES}", visibleItemCount: 50)
+    extendedChoice (description: 'Select an environment for deployment', multiSelectDelimiter: ',',
+            name: 'ENVIRONMENT', quoteValue: false, defaultValue: "", saveJSONParameterToFile: false, type: 'PT_SINGLE_SELECT',
+            value: GlobalVars.ENVIRONMENT_NAMES, visibleItemCount: 50)
 }
 
 pipeline {
     agent any
     stages {
+
+        stage("Identify changes"){
+            steps {
+                script {
+
+                    println "envs/${env.ENVIRONMENT}.json"
+                    def envFiles = findFiles(glob: "envs/${env.ENVIRONMENT}.json")
+                    def environmentConfigs=[]
+                    envFiles.each { tenantFile ->
+                        def commonCfg = readJSON file: "envs/config.json"
+                        def desiredDeployment = merge(commonCfg, readJSON(file: tenantFile.path))
+                        deploymentEnv = desiredDeployment.environment
+
+                        def baseline = readJSON file: "deploymentdetails/baseline.json"
+                        def envReleases = baseline.deploymentEnv
+                        def components = identifyTenantDeployment(desiredDeployment.components, envReleases)
+
+                        def tenantDeploymentConfig = [
+                                "components": []
+                        ]
+                        if (desiredDeployment.components != null && desiredDeployment.components.size() > 0) {
+                            def batchIndex = 0
+                            def index = 0
+                            desiredDeployment.components.findAll { c -> c.action != "none" }.each {  component ->
+                                tenantDeploymentConfig.components << component
+                            }
+                        }
+                        environmentConfigs << tenantDeploymentConfig
+                    }
+                    environmentDeploymentConfigs[deploymentEnv] = environmentConfigs
+                    println "environmentDeploymentConfigs has data: ${deploymentConfig.ucasServiceEnv}"
+
+                }
+            }
+        }
+
+
+
+
         stage("Checkout Pipeline Code") {
             steps {
                 checkout scm
             }
         }
-
-        stage("Select Components") {
-            steps {
-                script {
-                    def sourceConfig = readJSON file: "envs/test.json"
-                    // def environment = sourceConfig.environment
-                    // process release config to get delta
-                    def baseline = readJSON file: "envs/dev.json"
-                    sourceEnvDeployments = baseline.environment;
-                    def componentNames = []
-                    def values = [exactClone]
-                    values.addAll(sourceEnvDeployments.collect { it.name })
-                    print "Deployed Items: "
-                    println values
-
-                    timeout(time: 300, unit: 'SECONDS')
-                            {
-                                componentNames = input(
-                                        message: 'Please select the components to update on target environment', ok: 'Next',
-                                        parameters: [
-                                                extendedChoice(
-                                                        defaultValue: 'All',
-                                                        description: '',
-                                                        multiSelectDelimiter: ',',
-                                                        name: 'COMPONENTS',
-                                                        quoteValue: false,
-                                                        saveJSONParameterToFile: false,
-                                                        type: 'PT_CHECKBOX',
-                                                        value: values.join(','),
-                                                        visibleItemCount: 10)]).split(',')
-                            }
-                    if (componentNames.contains(exactClone)) {
-                        selectedComponents = componentNames.collect { it.name != exactClone }
-                    } else {
-                        componentNames.each { componentName ->
-                            selectedComponents << componentName
-                        }
-                    }
-
-                    print "Selected components to copy: "
-                    println selectedComponents
-                }
-            }
-        }
-
 
         stage("Clean workspace") {
             steps {
@@ -80,4 +70,44 @@ pipeline {
             }
         }
     }
+}
+
+
+
+
+def identifyTenantDeployment(components, envReleases){
+    def componentsToDeploy = []
+    components.each { component ->
+        def trackingEntryName = component.name
+        def envReleaseEntry = envReleases.find {it.name == trackingEntryName }
+
+        if(envReleaseEntry) {
+            def envComponentDeployment = new JsonSlurper().parseText(envReleaseEntry.value)
+            if((component.tag && component.tag != envComponentDeployment.tag)
+                    || (component.commit && component.commit != envComponentDeployment.commit)
+                    || (!component.tag && !component.commit && component.branch == envComponentDeployment.branch)
+                    || (component.branch != envComponentDeployment.branch)
+            )
+            {
+                component.action = "upgrade"
+                component.fromTag = envComponentDeployment.tag
+                component.fromCommit = envComponentDeployment.commit
+                component.fromBranch = envComponentDeployment.branch
+                component.fromGlobalConfigKey = envComponentDeployment.globalConfigKey
+            }
+            else {
+                component.action = "none"
+                component.fromTag = envComponentDeployment.tag
+                component.fromCommit = envComponentDeployment.commit
+                component.fromBranch = envComponentDeployment.branch
+                component.fromGlobalConfigKey = envComponentDeployment.globalConfigKey
+            }
+        }
+        else {
+            // new deployment
+            component.action = "install"
+        }
+        componentsToDeploy << component
+    }
+    return componentsToDeploy
 }
