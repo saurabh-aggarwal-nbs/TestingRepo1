@@ -24,15 +24,17 @@ pipeline {
             steps {
                 script {
 
-                    println "${env} -  - -- - -envs/${env.ENVIRONMENT}.json"
+                    println "envs/${env.ENVIRONMENT}.json"
                     def envFiles = findFiles(glob: "envs/${env.ENVIRONMENT}.json")
                     def environmentConfigs=[]
                     envFiles.each { tenantFile ->
                         def commonCfg = readJSON file: "config.json"
                         def desiredDeployment = merge(commonCfg, readJSON(file: tenantFile.path))
-                        deploymentEnv = desiredDeployment.environment
+                        deploymentEnv = env.ENVIRONMENT
 
                         def baseline = readJSON file: "deploymentdetails/baseline.json"
+                        println "baseline ${baseline}.json"
+
                         def envReleases = baseline.deploymentEnv
                         def components = identifyTenantDeployment(desiredDeployment.components, envReleases)
 
