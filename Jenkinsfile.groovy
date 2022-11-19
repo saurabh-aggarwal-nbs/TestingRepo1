@@ -25,9 +25,8 @@ pipeline {
                 script {
 
                     println "envs/${env.ENVIRONMENT}.json"
-                    def envFiles = findFiles(glob: "envs/${env.ENVIRONMENT}.json")
                     def environmentConfigs=[]
-                    envFiles.each { desiredDeployment ->
+                        def desiredDeployment = readJSON file: "envs/${env.ENVIRONMENT}.json"
                         deploymentEnv = desiredDeployment.environment
 
                         def baseline = readJSON file: "deploymentdetails/baseline.json"
@@ -47,7 +46,6 @@ pipeline {
                             }
                         }
                         environmentConfigs << tenantDeploymentConfig
-                    }
                     environmentDeploymentConfigs[deploymentEnv] = environmentConfigs
                     println "environmentDeploymentConfigs has data: ${environmentDeploymentConfigs}"
 
