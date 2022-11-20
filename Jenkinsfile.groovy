@@ -9,7 +9,7 @@ def deployedComponents = [:]
 def plannedComponents = [:]
 def updatedBaselineComponents = [:]
 def finalFile = "checkoutdir/${env.ENVIRONMENT}-baseline.json"
-def baseline = [:]
+def baseline = []
 
 pipeline {
     agent any
@@ -41,7 +41,6 @@ pipeline {
                         def baselineRepo = readJSON text: "{'name':'baseline', 'branch': 'main'}"
                         checkoutRepository(baselineRepo)
                         if(fileExists("${deploymentEnv}-baseline.json")){
-                            baseline = []
                             baseline = readJSON file: "${deploymentEnv}-baseline.json"
                         }
                     }

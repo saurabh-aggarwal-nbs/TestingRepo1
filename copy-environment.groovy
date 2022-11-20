@@ -8,7 +8,7 @@ def sourceConfig = null
 def targetConfig = null
 def targetConfigFile = ""
 String ENVIRONMENT_NAMES = "dev,test,pre,prd"
-def baseline = [:]
+def baseline = []
 
 pipeline {
     agent any
@@ -51,7 +51,6 @@ pipeline {
                         def baselineRepo = readJSON text: "{'name':'baseline', 'branch': 'main'}"
                         checkoutRepository(baselineRepo)
                         if(fileExists("${env.SOURCE_ENVIRONMENT}-baseline.json")){
-                            baseline = []
                             baseline = readJSON file: "${env.SOURCE_ENVIRONMENT}-baseline.json"
                         }
                     }
@@ -151,7 +150,7 @@ pipeline {
                     git config --global user.email jenkins@test.com; \
                     git config --global user.name saurabh-aggarwal-nbs; \
                     git checkout -b ${branch}; \
-                    git add ${targetConfigFile}; \
+                    git add --all; \
                     git commit -m 'Coping configuration from ${env.SOURCE_ENVIRONMENT} to ${env.TARGET_ENVIRONMENT}, Copying ${selectedComponents.join(', ')}'; \
                     git status; \
                     git push origin ${branch}\""
