@@ -255,7 +255,7 @@ def checkoutRepository(repository) {
 def updateBaselineFile(){
 
     dir("checkoutdir") {
-        checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 0, noTags: true, reference: '', shallow: false, timeout: 60], [$class: 'CheckoutOption', timeout: 60]], submoduleCfg: [],
+        checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [],
                   userRemoteConfigs: [[credentialsId: 'saurabh-aggarwal-nbs', url: 'https://github.com/saurabh-aggarwal-nbs/baseline.git']]])
     }
     println "pushing the changes now"
