@@ -43,10 +43,12 @@ pipeline {
                     println "Checkout baseline repo"
                     def repositoryName = "https://github.com/saurabh-aggarwal-nbs"
                     def baselineRepo = readJSON text: "{'name':'baseline', 'branch': 'main'}"
-//                    dir("gitops"){
-                        checkoutRepository(baselineRepo)
-//                    }
-                    def baseline = readJSON file: "${deploymentEnv}-baseline.json"
+                    checkoutRepository(baselineRepo)
+
+                    def baseline = [:]
+                    if(fileExists("${deploymentEnv}-baseline.json")){
+                        baseline = readJSON file: "${deploymentEnv}-baseline.json"
+                    }
                     println "baseline ${baseline}"
 
                     def components = identifyTenantDeployment(desiredDeployment.components, baseline)
