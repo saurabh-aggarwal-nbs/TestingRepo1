@@ -87,7 +87,7 @@ pipeline {
                                         dir("${component.name}") {
                                             deployArtifact(component)
                                             if (component.deployed) {
-                                                component.commit = component.checkoutInfo.GIT_COMMIT
+//                                                component.commit = component.checkoutInfo.GIT_COMMIT
                                                 deployedComponents[envDeploymentConfigs.key] << component
                                             }
                                         }
@@ -198,13 +198,13 @@ def deployArtifact(component) {
     component.deployeedOn = deployedOn
     component.trackDeployment = true
 
-    def trackingEntry = [
-            "deployedOn": deployedOn,
-            "tag": component.tag,
-            "commit": component.commit,
-            "name": component.name,
-            "branch": component.branch,
-    ]
+    def trackingEntry = [:]
+    trackingEntry.deployedOn =  deployedOn
+    trackingEntry.tag = component.tag
+    trackingEntry.commit = component.commit
+    trackingEntry.name = component.name
+    trackingEntry.branch =  component.branch
+
 
     updatedBaselineComponents << trackingEntry
 
