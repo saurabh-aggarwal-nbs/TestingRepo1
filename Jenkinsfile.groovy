@@ -265,6 +265,7 @@ def updateBaselineFile(){
                 git add ${env.ENVIRONMENT}-baseline.json; \
                 git commit -m 'updating baseline repo'; \
                 git push origin ${branch}\""
+    println "pushing the changes completed"
 
 
 }
