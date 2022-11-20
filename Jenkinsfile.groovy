@@ -12,6 +12,7 @@ def deploymentEnv = "main"
 def environmentDeploymentConfigs = [:]
 def deployedComponents = [:]
 def plannedComponents = [:]
+def updatedBaselineComponents = [:]
 
 pipeline {
     agent any
@@ -106,24 +107,15 @@ pipeline {
             script  {
                 println "Generating artifacts to store what deployment happened"
                 if(env.ENVIRONMENT){
-                    def componentsBaseline = []
                     environmentDeploymentConfigs.each { envDeploymentConfigs ->
                         envDeploymentConfigs.value.each { deploymentConfigItem ->
                             plannedComponents=[]
                             deploymentConfigItem.components.each { component ->
                                 plannedComponents << component
-                                def tempComp = {}
-                                tempComp.name = component.name
-                                tempComp.commit = component.commit
-                                tempComp.branch = component.branch
-                                tempComp.tag = component.tag
-                                tempComp.deployedOn = component.deployedOn
-                                componentsBaseline << tempComp
                             }
                         }
                         writeJSON json: deployedComponents[envDeploymentConfigs.key]?:[:], file: "output/deployed-components-${envDeploymentConfigs.key}.json", pretty: 1
                         writeJSON json: plannedComponents, file: "output/planned-components-${envDeploymentConfigs.key}.json", pretty: 1
-                        writeJSON json: componentsBaseline, file: "checkoutdir/${env.ENVIRONMENT}-baseline.json", pretty: 4
                     }
                     updateBaselineFile()
                 }
@@ -207,11 +199,12 @@ def deployArtifact(component) {
     def trackingEntry = [
             "deployedOn": deployedOn,
             "tag": component.tag,
-            "commit": component.commit ?: component.checkoutInfo.GIT_COMMIT,
-            "branch": component.branch ?: component.checkoutInfo.GIT_BRANCH,
+            "commit": component.commit,
+            "name": component.name,
+            "branch": component.branch,
     ]
 
-
+    updatedBaselineComponents << trackingEntry
 
     println "deploying component ${component.name}"
 
@@ -256,6 +249,7 @@ def checkoutRepository(repository) {
 def updateBaselineFile(){
 
     dir("checkoutdir") {
+        writeJSON json: updatedBaselineComponents, file: "${env.ENVIRONMENT}-baseline.json", pretty: 4
         checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [],
                   userRemoteConfigs: [[credentialsId: 'saurabh-aggarwal-nbs', url: 'https://github.com/saurabh-aggarwal-nbs/baseline.git']]])
     }
