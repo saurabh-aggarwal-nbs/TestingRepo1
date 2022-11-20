@@ -130,7 +130,7 @@ pipeline {
 
                     }
                     def map1 = readJSON file: "output/${env.ENVIRONMENT}-baseline.json"
-                    def map2 = readJSON file: " ${finalFile}"
+                    def map2 = readJSON file: "${finalFile}"
                     if(map1 != map2){
                         println "deployment component tracking required"
                         sh """
