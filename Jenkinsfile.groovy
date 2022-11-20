@@ -255,20 +255,14 @@ def updateBaselineFile(){
     }
 
     // Push the changes
-    def branch = env.BUILD_TAG
-    withCredentials([
-            sshUserPrivateKey(credentialsId: 'saurabh-aggarwal-nbs', keyFileVariable: 'SSH_KEY_FILE', passphraseVariable: '', usernameVariable: '')])
-            {
-                sh "ssh-agent bash -c \" \
-                            ssh-add \$SSH_KEY_FILE; \
-                            cd checkoutdir; \
-                            git config --global user.email jenkins@test.com; \
-                            git config --global user.name saurabh-aggarwal-nbs; \
-                            git checkout -b main; \
-                            git add ${env.ENVIRONMENT}-baseline.json; \
-                            git commit -m 'updating baseline repo'; \
-                            git push origin main\""
+    sh "ssh-agent bash -c \" \
+                cd checkoutdir; \
+                git config --global user.email jenkins@test.com; \
+                git config --global user.name saurabh-aggarwal-nbs; \
+                git checkout -b main; \
+                git add ${env.ENVIRONMENT}-baseline.json; \
+                git commit -m 'updating baseline repo'; \
+                git push origin main\""
 
-            }
 
 }
