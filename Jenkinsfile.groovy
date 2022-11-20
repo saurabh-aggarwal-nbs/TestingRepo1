@@ -41,7 +41,7 @@ pipeline {
 //                    dir("gitops"){
                         checkoutRepository(baselineRepo)
 //                    }
-                    def baseline = readJSON file: "ev/baseline.json"
+                    def baseline = readJSON file: "env/baseline.json"
                     println "baseline ${baseline}"
 
                     def envReleases = baseline.deploymentEnv
