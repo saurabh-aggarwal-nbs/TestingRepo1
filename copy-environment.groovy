@@ -144,6 +144,8 @@ pipeline {
         stage('Update Configuration') {
             steps {
                 script {
+                    writeJSON json: targetConfig, file: targetConfigFile, pretty: 4
+
                     def branch = env.BUILD_TAG
                     sh "ssh-agent bash -c \" \
                     git config --global user.email jenkins@test.com; \
