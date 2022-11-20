@@ -277,6 +277,6 @@ def updateBaselineFile(){
                 git add ${finalFile}; \
                 git status; \
                 git commit -am 'updating baseline repo'; \
-                git push\""
+                git push origin HEAD:main\""
     println "pushing the changes completed"
 }
