@@ -39,7 +39,7 @@ pipeline {
                     def repositoryName = "https://github.com/saurabh-aggarwal-nbs"
                     def baselineRepo = readJSON text: "{'name':'baseline', 'branch': 'main'}"
 //                    dir("gitops"){
-                        checkoutRepository(gitops)
+                        checkoutRepository(baselineRepo)
 //                    }
                     def baseline = readJSON file: "ev/baseline.json"
                     println "baseline ${baseline}"
