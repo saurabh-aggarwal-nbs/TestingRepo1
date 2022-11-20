@@ -266,7 +266,7 @@ def updateBaselineFile(){
     // Push the changes
 
     sh "ssh-agent bash -c \" \
-                cp 'output/${env.ENVIRONMENT}-baseline.json' 'checkoutdir/${env.ENVIRONMENT}-baseline.json' \
+                cp output/${env.ENVIRONMENT}-baseline.json checkoutdir/${env.ENVIRONMENT}-baseline.json -v -f \
                 cd checkoutdir; \
                 git config --global user.email jenkins@test.com; \
                 git config --global user.name saurabh-aggarwal-nbs; \
