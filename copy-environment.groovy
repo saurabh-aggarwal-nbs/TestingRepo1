@@ -159,6 +159,9 @@ pipeline {
 
     post {
         always {
+
+            println "post"
+
 //            cleanWs cleanWhenAborted: false, cleanWhenFailure: false, cleanWhenNotBuilt: false, cleanWhenUnstable: false
         }
         success {
