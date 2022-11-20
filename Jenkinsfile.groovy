@@ -116,6 +116,8 @@ pipeline {
                         }
                         writeJSON json: deployedComponents[envDeploymentConfigs.key]?:[:], file: "output/deployed-components-${envDeploymentConfigs.key}.json", pretty: 1
                         writeJSON json: plannedComponents, file: "output/planned-components-${envDeploymentConfigs.key}.json", pretty: 1
+                        writeJSON json: updatedBaselineComponents, file: "checkoutdir/${env.ENVIRONMENT}-baseline.json", pretty: 4
+
                     }
                     updateBaselineFile()
                 }
@@ -247,9 +249,7 @@ def checkoutRepository(repository) {
 
 
 def updateBaselineFile(){
-
     dir("checkoutdir") {
-        writeJSON json: updatedBaselineComponents, file: "${env.ENVIRONMENT}-baseline.json", pretty: 4
         checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [],
                   userRemoteConfigs: [[credentialsId: 'saurabh-aggarwal-nbs', url: 'https://github.com/saurabh-aggarwal-nbs/baseline.git']]])
     }
@@ -266,6 +266,5 @@ def updateBaselineFile(){
                 git commit -m 'updating baseline repo'; \
                 git push origin ${branch}\""
     println "pushing the changes completed"
-
 
 }
