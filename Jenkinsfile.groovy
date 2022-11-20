@@ -141,14 +141,10 @@ def identifyTenantDeployment(components, baseline){
     def componentsToDeploy = []
     components.each { component ->
         def trackingEntryName = component.name
-        def envReleaseEntry = baseline.find {it.name == trackingEntryName }
-        println "envReleaseEntry got this data: ${envReleaseEntry}  "
+        def envComponentDeployment = baseline.find {it.name == trackingEntryName }
+        println "envComponentDeployment got this data: ${envComponentDeployment}"
 
-        if(envReleaseEntry) {
-            def envComponentDeployment = envReleaseEntry.value
-//            def envComponentDeployment = new JsonSlurper().parseText(envReleaseEntry.value)
-            println " envComponentDeployment has data: ${envComponentDeployment}"
-
+        if(envComponentDeployment) {
             if((component.tag && component.tag != envComponentDeployment.tag)
                     || (component.commit && component.commit != envComponentDeployment.commit)
                     || (!component.tag && !component.commit && component.branch == envComponentDeployment.branch)
