@@ -130,10 +130,13 @@ pipeline {
 
                     }
                     def map1 = readJSON file: "output/${env.ENVIRONMENT}-baseline.json"
-                    def map2 = readJSON file: "checkoutdir/${env.ENVIRONMENT}-baseline.json"
+                    def map2 = readJSON file: " ${finalFile}"
                     if(map1 != map2){
                         println "deployment component tracking required"
-                        updateBaselineFile()
+                        sh """
+                            cp 'output/${env.ENVIRONMENT}-baseline.json' ${finalFile}
+                        """
+                        updateBaselineFile(finalFile)
                     }
                 }
             }
@@ -223,12 +226,37 @@ def deployArtifact(component) {
     component.deployed = true
 }
 
+def checkoutRepository(repository) {
+    def checkoutName = "refs/heads/${repository.branch}"
+    if(repository.tag){
+        checkoutName = "refs/tags/${repository.tag}"
+        println "Checking out from tag ${checkoutName}"
+    }
+    else if(repository.commit)
+    {
+        checkoutName = "${repository.commit}"
+        println "Checking out from commit ${checkoutName}"
+    }
+    else
+    {
+        println "Checking out from branch ${checkoutName}"
+    }
+    println "Repository name : ${repository.name}"
+    def checkoutInfo = checkout([
+            $class: 'GitSCM',
+            branches: [[name: checkoutName]],
+            doGenerateSubmoduleConfigurations: false,
+            extensions: [],
+            submoduleCfg: [],
+            userRemoteConfigs: [[
+                                        credentialsId: 'saurabh-aggarwal-nbs',
+                                        url: "https://github.com/saurabh-aggarwal-nbs/${repository.name}.git/"
+                                ]]
+    ])
+    return checkoutInfo
+}
 
-def updateBaselineFile(){
-    sh """
-        cp 'output/${env.ENVIRONMENT}-baseline.json' ${finalFile}
-    """
-
+def updateBaselineFile(finalFile){
     sh "ssh-agent bash -c \" \
                 cd checkoutdir; \
                 git config --global user.email jenkins@test.com; \
