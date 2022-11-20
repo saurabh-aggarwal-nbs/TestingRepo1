@@ -13,6 +13,7 @@ def environmentDeploymentConfigs = [:]
 def deployedComponents = [:]
 def plannedComponents = [:]
 def updatedBaselineComponents = [:]
+def finalFile = "checkoutdir/${env.ENVIRONMENT}-baseline.json"
 
 pipeline {
     agent any
@@ -39,16 +40,17 @@ pipeline {
                     def desiredDeployment = readJSON file: "envs/${env.ENVIRONMENT}.json"
                     deploymentEnv = desiredDeployment.environment
 
-//                    def baseline = readJSON file: "deploymentdetails/baseline.json"
                     println "Checkout baseline repo"
-                    def repositoryName = "https://github.com/saurabh-aggarwal-nbs"
-                    def baselineRepo = readJSON text: "{'name':'baseline', 'branch': 'main'}"
-                    checkoutRepository(baselineRepo)
+                    dir("checkoutdir") {
+                        def repositoryName = "https://github.com/saurabh-aggarwal-nbs"
+                        def baselineRepo = readJSON text: "{'name':'baseline', 'branch': 'main'}"
+                        checkoutRepository(baselineRepo)
+                    }
 
                     def baseline = [:]
-                    if(fileExists("${deploymentEnv}-baseline.json")){
+                    if(fileExists("checkoutdir/${deploymentEnv}-baseline.json")){
                         baseline = []
-                        baseline = readJSON file: "${deploymentEnv}-baseline.json"
+                        baseline = readJSON file: "checkoutdir/${deploymentEnv}-baseline.json"
                     }
                     println "baseline ${baseline}"
 
@@ -128,7 +130,7 @@ pipeline {
 
                     }
                     def map1 = readJSON file: "output/${env.ENVIRONMENT}-baseline.json"
-                    def map2 = readJSON file: "${env.ENVIRONMENT}-baseline.json"
+                    def map2 = readJSON file: "checkoutdir/${env.ENVIRONMENT}-baseline.json"
                     if(map1 != map2){
                         println "deployment component tracking required"
                         updateBaselineFile()
@@ -158,10 +160,6 @@ def identifyTenantDeployment(components, baseline){
     components.each { component ->
         component.action = "install"
         baseline.each { envComponentDeployment ->
-
-//            def envComponentDeployment = baseline.find { it.name == trackingEntryName }
-//            println "envComponentDeployment got this data: ${envComponentDeployment}"
-//            println "component got this data: ${component}"
 
             if (envComponentDeployment.name == component.name) {
                 println "baselineComp got this data: ${envComponentDeployment}"
@@ -227,18 +225,9 @@ def deployArtifact(component) {
 
 
 def updateBaselineFile(){
-    dir("checkoutdir") {
-        checkout([$class: 'GitSCM', branches: [[name: 'refs/heads/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [],
-                  userRemoteConfigs: [[credentialsId: 'saurabh-aggarwal-nbs', url: 'https://github.com/saurabh-aggarwal-nbs/baseline.git']]])
-        println "pushing the changes now"
-    }
-    def branch = 'main'
-    def finalFile = "checkoutdir/${env.ENVIRONMENT}-baseline.json"
-    // Push the changes
     sh """
         cp 'output/${env.ENVIRONMENT}-baseline.json' ${finalFile}
     """
-
 
     sh "ssh-agent bash -c \" \
                 cd checkoutdir; \
