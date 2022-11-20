@@ -81,17 +81,18 @@ pipeline {
             steps {
                 script {
                     environmentDeploymentConfigs.each { envDeploymentConfigs ->
-                        stage("Deploying environment ${envDeploymentConfigs.key}") {
+                        stage("Deploying environment ${env.ENVIRONMENT}") {
                             deployedComponents[envDeploymentConfigs.key] = [:]
                             envDeploymentConfigs.value.each { deploymentConfigItem ->
                                 stage("${deploymentConfigItem}") {
                                     deployedComponents[envDeploymentConfigs.key] = []
                                     deploymentConfigItem.components.each { component ->
                                         dir("${component.name}") {
-                                            deployArtifact(component)
-                                            if (component.deployed) {
-//                                                component.commit = component.checkoutInfo.GIT_COMMIT
-                                                deployedComponents[envDeploymentConfigs.key] << component
+                                            stage("${component.name}"){
+                                                deployArtifact(component)
+                                                if (component.deployed) {
+                                                    deployedComponents[envDeploymentConfigs.key] << component
+                                                }
                                             }
                                         }
                                     }
