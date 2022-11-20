@@ -1,6 +1,4 @@
-import java.text.SimpleDateFormat
 import groovy.json.*
-import java.time.LocalDateTime
 
 String ENVIRONMENT_NAMES = "dev,test,pre,prd"
 def deploymentEnv = ""
@@ -185,11 +183,6 @@ def deployArtifact(component) {
     println "checking out " + component.name
     component.checkoutInfo = checkoutRepository(component)
     def trackingEntry = [:]
-//    def date = new Date()
-//    def sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss")
-//    def deployedOn =sdf.format(date)
-//    component.deployeedOn = deployedOn
-//    trackingEntry.deployedOn =  deployedOn
     trackingEntry.tag = component.tag
     trackingEntry.commit = component.commit?component.commit:component.checkoutInfo.GIT_COMMIT
     trackingEntry.name = component.name
@@ -199,7 +192,6 @@ def deployArtifact(component) {
     {
         println "Commit ${component.checkoutInfo.GIT_COMMIT} is already deployed, skipping deployment for ${component.name}"
         component.deployed = false
-//        trackingEntry.deployedOn =  deployedOn
         component.trackingEntry = trackingEntry
         return
     }
