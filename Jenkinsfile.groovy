@@ -11,6 +11,7 @@ def deploymentBranch = "main"
 def deploymentEnv = "main"
 def environmentDeploymentConfigs = [:]
 def deployedComponents = [:]
+def plannedComponents = [:]
 
 pipeline {
     agent any
@@ -106,7 +107,6 @@ pipeline {
                 println "Generating artifacts to store what deployment happened"
 
                 environmentDeploymentConfigs.each { envDeploymentConfigs ->
-                    def plannedComponents = [:]
                     envDeploymentConfigs.value.each { deploymentConfigItem ->
                         plannedComponents=[]
                         deploymentConfigItem.components.each { component ->
@@ -115,6 +115,7 @@ pipeline {
                     }
                     writeJSON json: deployedComponents[envDeploymentConfigs.key]?:[:], file: "output/deployed-components-${envDeploymentConfigs.key}.json", pretty: 1
                     writeJSON json: plannedComponents, file: "output/planned-components-${envDeploymentConfigs.key}.json", pretty: 1
+
                 }
                 updateBaselineFile()
             }
@@ -248,10 +249,11 @@ def checkoutRepository(repository) {
 
 
 def updateBaselineFile(){
+
     dir("checkoutdir") {
-        checkout([$class: 'GitSCM', branches: [[name: main]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 0, noTags: true, reference: '', shallow: false, timeout: 60], [$class: 'CheckoutOption', timeout: 60]], submoduleCfg: [],
+        checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 0, noTags: true, reference: '', shallow: false, timeout: 60], [$class: 'CheckoutOption', timeout: 60]], submoduleCfg: [],
                   userRemoteConfigs: [[credentialsId: 'saurabh-aggarwal-nbs', url: 'https://github.com/saurabh-aggarwal-nbs/baseline.git']]])
-        writeJSON json: environmentDeploymentConfigs, file: "${env.ENVIRONMENT}-baseline.json", pretty: 4
+        writeJSON json: plannedComponents, file: "${env.ENVIRONMENT}-baseline.json", pretty: 4
     }
     println "pushing the changes now"
 
