@@ -112,13 +112,15 @@ pipeline {
                             plannedComponents=[]
                             updatedBaselineComponents = []
                             deploymentConfigItem.components.each { component ->
+                                println "Generating component with tracking ${component} and ${component.trackingEntry}"
+
                                 plannedComponents << component
                                 updatedBaselineComponents << component.trackingEntry
                             }
                         }
                         writeJSON json: deployedComponents[envDeploymentConfigs.key]?:[:], file: "output/deployed-components-${envDeploymentConfigs.key}.json", pretty: 1
                         writeJSON json: plannedComponents, file: "output/planned-components-${envDeploymentConfigs.key}.json", pretty: 1
-                        writeJSON json: updatedBaselineComponents, file: "checkoutdir/${env.ENVIRONMENT}-baseline.json", pretty: 4
+                        writeJSON json: updatedBaselineComponents, file: "checkoutdir/${env.ENVIRONMENT}-baseline.json", pretty: 1
 
                     }
                     updateBaselineFile()
@@ -165,13 +167,11 @@ def identifyTenantDeployment(components, baseline){
                     component.fromTag = envComponentDeployment.tag
                     component.fromCommit = envComponentDeployment.commit
                     component.fromBranch = envComponentDeployment.branch
-                    component.fromGlobalConfigKey = envComponentDeployment.globalConfigKey
                 } else {
                     component.action = "none"
                     component.fromTag = envComponentDeployment.tag
                     component.fromCommit = envComponentDeployment.commit
                     component.fromBranch = envComponentDeployment.branch
-                    component.fromGlobalConfigKey = envComponentDeployment.globalConfigKey
                 }
             }
         }
@@ -186,12 +186,10 @@ def deployArtifact(component) {
     println "checking out " + component.name
     component.checkoutInfo = checkoutRepository(component)
     def trackingEntry = [:]
-//
 //    def date = new Date()
 //    def sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss")
 //    def deployedOn =sdf.format(date)
 //    component.deployeedOn = deployedOn
-//
 //    trackingEntry.deployedOn =  deployedOn
     trackingEntry.tag = component.tag
     trackingEntry.commit = component.commit?component.commit:component.checkoutInfo.GIT_COMMIT
@@ -209,9 +207,8 @@ def deployArtifact(component) {
 
     component.trackDeployment = true
     component.trackingEntry = trackingEntry
-//    updatedBaselineComponents << trackingEntry
 
-    println "deploying component ${component.name}"
+    println "deploying component ${component}"
 
 
     /// do your deployment step here
