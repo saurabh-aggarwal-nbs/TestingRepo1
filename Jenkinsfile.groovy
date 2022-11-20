@@ -250,7 +250,7 @@ def updateBaselineFile(finalFile){
                 cd checkoutdir; \
                 git config --global user.email jenkins@test.com; \
                 git config --global user.name saurabh-aggarwal-nbs; \
-                git add ${finalFile}; \
+                git add --all; \
                 git status; \
                 git commit -am 'updating baseline ${finalFile}'; \
                 git push origin HEAD:main\""
