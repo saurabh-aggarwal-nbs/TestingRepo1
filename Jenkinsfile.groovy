@@ -45,7 +45,7 @@ pipeline {
 //                    dir("gitops"){
                         checkoutRepository(baselineRepo)
 //                    }
-                    def baseline = readJSON file: "env/baseline.json"
+                    def baseline = readJSON file: "${deploymentEnv}-baseline.json"
                     println "baseline ${baseline}"
 
                     def envReleases = baseline.deploymentEnv
@@ -87,6 +87,7 @@ pipeline {
                                         dir("${component.name}") {
                                             deployArtifact(component)
                                             if (component.deployed) {
+                                                component.commit = component.checkoutInfo.GIT_COMMIT
                                                 deployedComponents[envDeploymentConfigs.key] << component
                                             }
                                         }
