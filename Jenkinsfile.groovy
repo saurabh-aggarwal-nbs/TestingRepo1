@@ -49,7 +49,7 @@ pipeline {
                     println "baseline ${baseline}"
 
                     def envReleases = baseline.deploymentEnv
-                    def components = identifyTenantDeployment(desiredDeployment.components, envReleases)
+                    def components = identifyTenantDeployment(desiredDeployment.components, baseline, envReleases)
 
                     def tenantDeploymentConfig = [
                             "components": []
@@ -136,13 +136,13 @@ pipeline {
     }
 }
 
-def identifyTenantDeployment(components, envReleases){
-    println "components has data: ${components}   and envReleases has data :${envReleases}"
+def identifyTenantDeployment(components, baseline, envReleases){
+    println "components has data: ${components}   and baseline has data :${baseline} for envReleases: ${envReleases}"
 
     def componentsToDeploy = []
     components.each { component ->
         def trackingEntryName = component.name
-        def envReleaseEntry = envReleases.find {it.name == trackingEntryName }
+        def envReleaseEntry = baseline.find {it.name == trackingEntryName }
         println "envReleaseEntry has data: ${envReleaseEntry} "
 
         if(envReleaseEntry) {
