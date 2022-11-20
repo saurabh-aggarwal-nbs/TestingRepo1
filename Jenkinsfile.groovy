@@ -255,16 +255,16 @@ def updateBaselineFile(){
     }
     println "pushing the changes now"
 
-
+    def branch = env.BUILD_TAG
     // Push the changes
     sh "ssh-agent bash -c \" \
                 cd checkoutdir; \
                 git config --global user.email jenkins@test.com; \
                 git config --global user.name saurabh-aggarwal-nbs; \
-                git checkout -b '${env.ENVIRONMENT}-baseline'; \
+                git checkout -b ${branch}; \
                 git add ${env.ENVIRONMENT}-baseline.json; \
                 git commit -m 'updating baseline repo'; \
-                git push origin '${env.ENVIRONMENT}-baseline'\""
+                git push origin ${branch}\""
 
 
 }
