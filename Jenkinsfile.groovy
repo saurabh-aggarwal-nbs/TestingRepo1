@@ -2,13 +2,8 @@ import java.text.SimpleDateFormat
 import groovy.json.*
 import java.time.LocalDateTime
 
-def doingExactClone = false
-def exactClone = "EXACT CLONE"
-def selectedComponents = []
-def sourceEnvDeployments = []
 String ENVIRONMENT_NAMES = "dev,test,pre,prd"
-def deploymentBranch = "main"
-def deploymentEnv = "main"
+def deploymentEnv = ""
 def environmentDeploymentConfigs = [:]
 def deployedComponents = [:]
 def plannedComponents = [:]
@@ -35,7 +30,6 @@ pipeline {
             steps {
                 script {
 
-                    println "envs/${env.ENVIRONMENT}.json"
                     def environmentConfigs = []
                     def desiredDeployment = readJSON file: "envs/${env.ENVIRONMENT}.json"
                     deploymentEnv = desiredDeployment.environment
@@ -60,8 +54,6 @@ pipeline {
                             "components": []
                     ]
                     if (desiredDeployment.components != null && desiredDeployment.components.size() > 0) {
-                        def batchIndex = 0
-                        def index = 0
                         desiredDeployment.components.findAll { c -> c.action != "none" }.each { component ->
                             tenantDeploymentConfig.components << component
                         }
@@ -156,7 +148,7 @@ pipeline {
 }
 
 def identifyTenantDeployment(components, baseline){
-    println "components has data: ${components}  \\n and baseline has data :${baseline}"
+    println "components has data: ${components}  and baseline has data :${baseline}"
 
     def componentsToDeploy = []
 
