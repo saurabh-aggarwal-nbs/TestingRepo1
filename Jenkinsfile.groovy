@@ -264,14 +264,16 @@ def updateBaselineFile(){
     }
     def branch = 'main'
     // Push the changes
+    sh """
+        cp 'output/${env.ENVIRONMENT}-baseline.json' 'checkoutdir/${env.ENVIRONMENT}-baseline.json'
+    """
 
     sh "ssh-agent bash -c \" \
-                cp output/${env.ENVIRONMENT}-baseline.json checkoutdir/${env.ENVIRONMENT}-baseline.json -v -f \
                 cd checkoutdir; \
                 git config --global user.email jenkins@test.com; \
                 git config --global user.name saurabh-aggarwal-nbs; \
-                git add -u '${env.ENVIRONMENT}-baseline.json'; \
-                git status \
+                git --all; \
+                git status; \
                 git commit -m 'updating baseline repo'; \
                 git push origin ${branch}\""
     println "pushing the changes completed"
