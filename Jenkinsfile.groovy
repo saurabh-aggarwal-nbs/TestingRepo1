@@ -34,8 +34,15 @@ pipeline {
                     def desiredDeployment = readJSON file: "envs/${env.ENVIRONMENT}.json"
                     deploymentEnv = desiredDeployment.environment
 
-                    def baseline = readJSON file: "deploymentdetails/baseline.json"
-                    println "baseline ${baseline}       "
+//                    def baseline = readJSON file: "deploymentdetails/baseline.json"
+                    println "Checkout baseline repo"
+                    def repositoryName = "https://github.com/saurabh-aggarwal-nbs"
+                    def baselineRepo = readJSON text: "{'name':'baseline', 'branch': 'main'}"
+//                    dir("gitops"){
+                        checkoutRepository(gitops)
+//                    }
+                    def baseline = readJSON file: "ev/baseline.json"
+                    println "baseline ${baseline}"
 
                     def envReleases = baseline.deploymentEnv
                     def components = identifyTenantDeployment(desiredDeployment.components, envReleases)
@@ -182,6 +189,8 @@ def deployArtifact(component) {
     component.branch = component.checkoutInfo.GIT_BRANCH
     component.trackDeployment = true
     println "deploying component ${component.name}"
+
+
     /// do your deployment step here
 
     component.deployed = true
