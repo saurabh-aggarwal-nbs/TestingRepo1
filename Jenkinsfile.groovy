@@ -9,6 +9,7 @@ def deployedComponents = [:]
 def plannedComponents = [:]
 def updatedBaselineComponents = [:]
 def finalFile = "checkoutdir/${env.ENVIRONMENT}-baseline.json"
+def baseline = [:]
 
 pipeline {
     agent any
@@ -35,7 +36,6 @@ pipeline {
                     deploymentEnv = desiredDeployment.environment
 
                     println "Checkout baseline repo"
-                    def baseline = [:]
                     dir("checkoutdir") {
                         def repositoryName = "https://github.com/saurabh-aggarwal-nbs"
                         def baselineRepo = readJSON text: "{'name':'baseline', 'branch': 'main'}"
@@ -121,8 +121,7 @@ pipeline {
 
                     }
                     def map1 = readJSON file: "output/${env.ENVIRONMENT}-baseline.json"
-                    def map2 = readJSON file: "${finalFile}"
-                    if(map1 != map2){
+                    if(map1 != baseline){
                         println "deployment component tracking required"
                         sh """
                             cp 'output/${env.ENVIRONMENT}-baseline.json' ${finalFile}
