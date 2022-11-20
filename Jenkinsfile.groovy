@@ -114,7 +114,7 @@ pipeline {
                         }
                     }
                     writeJSON json: deployedComponents[envDeploymentConfigs.key]?:[:], file: "output/deployed-components-${envDeploymentConfigs.key}.json", pretty: 1
-                    writeJSON json: plannedComponents, file: "output/planned-components-${envDeploymentConfigs.key}.json", pretty: 1
+                    writeJSON json: plannedComponents, file: "checkoutdir/${envDeploymentConfigs.key}-baseline.json", pretty: 1
 
                 }
                 updateBaselineFile()
@@ -133,9 +133,6 @@ pipeline {
         }
     }
 }
-
-
-
 
 def identifyTenantDeployment(components, envReleases){
     println "components has data: ${components}   and envReleases has data :${envReleases}"
@@ -253,7 +250,7 @@ def updateBaselineFile(){
     dir("checkoutdir") {
         checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 0, noTags: true, reference: '', shallow: false, timeout: 60], [$class: 'CheckoutOption', timeout: 60]], submoduleCfg: [],
                   userRemoteConfigs: [[credentialsId: 'saurabh-aggarwal-nbs', url: 'https://github.com/saurabh-aggarwal-nbs/baseline.git']]])
-        writeJSON json: plannedComponents, file: "${env.ENVIRONMENT}-baseline.json", pretty: 4
+//        writeJSON json: plannedComponents, file: "${env.ENVIRONMENT}-baseline.json", pretty: 4
     }
     println "pushing the changes now"
 
