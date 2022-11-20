@@ -263,7 +263,7 @@ def updateBaselineFile(finalFile){
                 git config --global user.name saurabh-aggarwal-nbs; \
                 git add ${finalFile}; \
                 git status; \
-                git commit -am 'updating baseline repo'; \
+                git commit -am 'updating baseline ${finalFile}'; \
                 git push origin HEAD:main\""
     println "pushing the changes completed"
 }
