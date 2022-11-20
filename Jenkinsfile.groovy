@@ -47,6 +47,7 @@ pipeline {
 
                     def baseline = [:]
                     if(fileExists("${deploymentEnv}-baseline.json")){
+                        baseline = []
                         baseline = readJSON file: "${deploymentEnv}-baseline.json"
                     }
                     println "baseline ${baseline}"
