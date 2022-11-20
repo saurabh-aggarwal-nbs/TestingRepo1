@@ -35,16 +35,15 @@ pipeline {
                     deploymentEnv = desiredDeployment.environment
 
                     println "Checkout baseline repo"
+                    def baseline = [:]
                     dir("checkoutdir") {
                         def repositoryName = "https://github.com/saurabh-aggarwal-nbs"
                         def baselineRepo = readJSON text: "{'name':'baseline', 'branch': 'main'}"
                         checkoutRepository(baselineRepo)
-                    }
-
-                    def baseline = [:]
-                    if(fileExists("checkoutdir/${deploymentEnv}-baseline.json")){
-                        baseline = []
-                        baseline = readJSON file: "checkoutdir/${deploymentEnv}-baseline.json"
+                        if(fileExists("${deploymentEnv}-baseline.json")){
+                            baseline = []
+                            baseline = readJSON file: "${deploymentEnv}-baseline.json"
+                        }
                     }
                     println "baseline ${baseline}"
 
