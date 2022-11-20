@@ -262,16 +262,16 @@ def updateBaselineFile(){
                   userRemoteConfigs: [[credentialsId: 'saurabh-aggarwal-nbs', url: 'https://github.com/saurabh-aggarwal-nbs/baseline.git']]])
         println "pushing the changes now"
     }
-    def branch = 'refs/heads/main'
+    def branch = 'main'
     // Push the changes
-    sh 'sleep 60'
 
     sh "ssh-agent bash -c \" \
                 cp 'output/${env.ENVIRONMENT}-baseline.json' 'checkoutdir/${env.ENVIRONMENT}-baseline.json' \
                 cd checkoutdir; \
                 git config --global user.email jenkins@test.com; \
                 git config --global user.name saurabh-aggarwal-nbs; \
-                git add '${env.ENVIRONMENT}-baseline.json'; \
+                git add -u '${env.ENVIRONMENT}-baseline.json'; \
+                git status \
                 git commit -m 'updating baseline repo'; \
                 git push origin ${branch}\""
     println "pushing the changes completed"
