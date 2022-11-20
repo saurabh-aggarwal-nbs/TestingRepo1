@@ -16,8 +16,6 @@ pipeline {
     agent any
     parameters {
 
-//        string(defaultValue: "dev", description: 'set env example: dev,uat', name: 'ENVIRONMENT')
-
 //        choice(name: 'ENVIRONMENT', choices: ENVIRONMENT_NAMES, description: 'Select an environment for deployment')
         extendedChoice (description: 'Select an environment for deployment', multiSelectDelimiter: ',',
                 name: 'ENVIRONMENT', quoteValue: false, defaultValue: "", saveJSONParameterToFile: false, type: 'PT_SINGLE_SELECT',
@@ -26,6 +24,11 @@ pipeline {
     stages {
 
         stage("Identify changes") {
+            when {
+                expression {
+                    env.ENVIRONMENT
+                }
+            }
             steps {
                 script {
 
