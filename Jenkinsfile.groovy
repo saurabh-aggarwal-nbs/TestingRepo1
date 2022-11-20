@@ -48,8 +48,7 @@ pipeline {
                     def baseline = readJSON file: "${deploymentEnv}-baseline.json"
                     println "baseline ${baseline}"
 
-                    def envReleases = baseline.deploymentEnv
-                    def components = identifyTenantDeployment(desiredDeployment.components, baseline, envReleases)
+                    def components = identifyTenantDeployment(desiredDeployment.components, baseline)
 
                     def tenantDeploymentConfig = [
                             "components": []
@@ -136,18 +135,19 @@ pipeline {
     }
 }
 
-def identifyTenantDeployment(components, baseline, envReleases){
-    println "components has data: ${components}   and baseline has data :${baseline} for envReleases: ${envReleases}"
+def identifyTenantDeployment(components, baseline){
+    println "components has data: ${components}  \\n and baseline has data :${baseline}"
 
     def componentsToDeploy = []
     components.each { component ->
         def trackingEntryName = component.name
         def envReleaseEntry = baseline.find {it.name == trackingEntryName }
+        println "envReleaseEntry got this data: ${envReleaseEntry}"
 
         if(envReleaseEntry) {
 //            def envComponentDeployment = envReleaseEntry.value
             def envComponentDeployment = new JsonSlurper().parseText(envReleaseEntry.value)
-            println "component has data: ${component} and envComponentDeployment has data: ${envComponentDeployment}"
+            println " envComponentDeployment has data: ${envComponentDeployment}"
 
             if((component.tag && component.tag != envComponentDeployment.tag)
                     || (component.commit && component.commit != envComponentDeployment.commit)
