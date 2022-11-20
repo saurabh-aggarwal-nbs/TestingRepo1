@@ -5,7 +5,7 @@ def exactClone = "EXACT CLONE"
 def selectedComponents = []
 def sourceEnvDeployments = []
 def sourceConfig = null
-def targetConfig = null
+def targetConfig = ["components": [ ]]
 def targetConfigFile = ""
 String ENVIRONMENT_NAMES = "dev,test,pre,prd"
 def baseline = []
@@ -42,7 +42,7 @@ pipeline {
                         targetConfig = readJSON file: "${targetConfigFile}"
                     }
                     else {
-                        error "Configuration file for selected target environment(${env.TARGET_ENVIRONMENT}) is not available"
+                        println "Configuration file for selected target environment(${env.TARGET_ENVIRONMENT}) is not available, creating new file"
                     }
 
                     println "Checkout baseline repo"
