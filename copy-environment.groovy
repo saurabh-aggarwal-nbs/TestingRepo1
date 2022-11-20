@@ -2,13 +2,13 @@
 import groovy.json.*
 
 def exactClone = "EXACT CLONE"
-def sourceBranch = "master"
 def selectedComponents = []
 def sourceEnvDeployments = []
 def sourceConfig = null
 def targetConfig = null
 def targetConfigFile = ""
 String ENVIRONMENT_NAMES = "dev,test,pre,prd"
+def baseline = [:]
 
 pipeline {
     agent any
@@ -39,14 +39,13 @@ pipeline {
                     }
 
                     println "Checkout baseline repo"
-                    def baseline = [:]
                     dir("checkoutdir") {
-                        def repositoryName = "https://github.com/saurabh-aggarwal-nbs"
+//                        def repositoryName = "https://github.com/saurabh-aggarwal-nbs"
                         def baselineRepo = readJSON text: "{'name':'baseline', 'branch': 'main'}"
                         checkoutRepository(baselineRepo)
-                        if(fileExists("checkoutdir/${deploymentEnv}-baseline.json")){
+                        if(fileExists("${env.SOURCE_ENVIRONMENT}-baseline.json")){
                             baseline = []
-                            baseline = readJSON file: "${deploymentEnv}-baseline.json"
+                            baseline = readJSON file: "${env.SOURCE_ENVIRONMENT}-baseline.json"
                         }
                     }
                     println "baseline ${baseline}"
@@ -55,7 +54,7 @@ pipeline {
 
                     
                     // process release config to get delta
-                    if(baseline.size() > 0)
+                    if(baseline != [])
                     {
                         sourceEnvDeployments = baseline.findAll {it.name}
                     }
@@ -103,40 +102,37 @@ pipeline {
             }             
         }
 
-//        stage('Update Components') {
-//            steps {
-//                script {
-//                    // Fetch the changes
-//                    selectedComponents.each { componentName ->
-//                        def updated = false
-//                        def targetComponent = targetConfig.components.find { it.name  == componentName }
-//                        def sourceComponent = sourceConfig.components.find { it.name  == componentName }
-//                        def trackingEntryName = componentTrackingEntryKey(componentName, sourceConfig.parameters.tenant)
-//                        def envEntry = sourceEnvDeployments.find {it.name == trackingEntryName }
-//                        def envComponentDeployment = new JsonSlurper().parseText(envEntry.value)
-//
-//                        if(targetComponent)
-//                        {
-//                            targetComponent.commit = envComponentDeployment.tag ? "" : envComponentDeployment.commit
-//                            targetComponent.tag = envComponentDeployment.tag
-//                            targetComponent.branch = envComponentDeployment.tag && !envComponentDeployment.commit &&  (envComponentDeployment.branch !=  "main" && envComponentDeployment.branch !=  "master") ? "master" : envComponentDeployment.branch
-//                        }
-//                        else
-//                        {
-//                            targetConfig.components << [
-//                                "name": componentName,
-//                                "commit": envComponentDeployment.commit ?: "",
-//                                "tag": envComponentDeployment.tag ?: "",
-//                                "branch": envComponentDeployment.branch ?: "",
-//                                "globalConfigKeyFormat": sourceComponent? (sourceComponent.globalConfigKeyFormat ?: "") : "",
-//                                "type": sourceComponent? sourceComponent.type : "",
-//                                "flowHooksEnabled": false,
-//                            ]
-//                        }
-//                    }
-//                }
-//            }
-//        }
+        stage('Update Components') {
+            steps {
+                script {
+                    // Fetch the changes
+                    selectedComponents.each { componentName ->
+                        def updated = false
+                        def targetComponent = targetConfig.components.find { it.name  == componentName }
+                        def sourceComponent = sourceConfig.components.find { it.name  == componentName }
+                        def trackingEntryName = componentName
+                        def envEntry = sourceEnvDeployments.find {it.name == trackingEntryName }
+                        def sourceBaselineDeployedComponent = baseline.find {it.name == trackingEntryName }
+
+                        if(targetComponent)
+                        {
+                            targetComponent.commit = sourceBaselineDeployedComponent.tag ? "" : sourceBaselineDeployedComponent.commit
+                            targetComponent.tag = sourceBaselineDeployedComponent.tag
+                            targetComponent.branch = sourceBaselineDeployedComponent.branch
+                        }
+                        else
+                        {
+                            targetConfig.components << [
+                                "name": componentName,
+                                "commit": sourceBaselineDeployedComponent.commit ?: "",
+                                "tag": sourceBaselineDeployedComponent.tag ?: "",
+                                "branch": sourceBaselineDeployedComponent.branch ?: "",
+                            ]
+                        }
+                    }
+                }
+            }
+        }
 
         stage('Update Configuration') {
             steps {
@@ -145,9 +141,8 @@ pipeline {
                     sh "ssh-agent bash -c \" \
                     git config --global user.email jenkins@test.com; \
                     git config --global user.name saurabh-aggarwal-nbs; \
-                    git add ${finalFile}; \
                     git checkout -b ${branch}; \
-                    git add ${finalFile}; \
+                    git add ${targetConfigFile}; \
                     git commit -m 'Coping configuration from ${env.SOURCE_ENVIRONMENT} to ${env.TARGET_ENVIRONMENT}, Copying ${selectedComponents.join(', ')}'; \
                     git status; \
                     git push origin ${branch}\""
