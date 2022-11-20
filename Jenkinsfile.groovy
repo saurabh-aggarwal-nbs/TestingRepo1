@@ -194,7 +194,7 @@ def deployArtifact(component) {
 //
 //    trackingEntry.deployedOn =  deployedOn
     trackingEntry.tag = component.tag
-    trackingEntry.commit = component.commit
+    trackingEntry.commit = component.commit?component.commit:component.checkoutInfo.GIT_COMMIT
     trackingEntry.name = component.name
     trackingEntry.branch =  component.branch
 
