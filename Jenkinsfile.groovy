@@ -260,10 +260,10 @@ def updateBaselineFile(){
                 cd checkoutdir; \
                 git config --global user.email jenkins@test.com; \
                 git config --global user.name saurabh-aggarwal-nbs; \
-                git checkout -b origin/main; \
+                git checkout -b '${env.ENVIRONMENT}-baseline'; \
                 git add ${env.ENVIRONMENT}-baseline.json; \
                 git commit -m 'updating baseline repo'; \
-                git push origin main\""
+                git push origin '${env.ENVIRONMENT}-baseline'\""
 
 
 }
