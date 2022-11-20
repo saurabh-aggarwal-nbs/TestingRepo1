@@ -143,7 +143,10 @@ pipeline {
         stage('Update Configuration') {
             steps {
                 script {
-                    writeJSON json: targetConfig, file: targetConfigFile, pretty: 4
+                    sh """
+                        rm -rf checkoutdir
+                    """
+                    writeJSON json: targetConfig, file: targetConfigFile, pretty: 1
 
                     def branch = env.BUILD_TAG
                     sh "ssh-agent bash -c \" \
@@ -163,9 +166,8 @@ pipeline {
     post {
         always {
 
-            println "post"
-
-//            cleanWs cleanWhenAborted: false, cleanWhenFailure: false, cleanWhenNotBuilt: false, cleanWhenUnstable: false
+            println "post process started"
+           cleanWs cleanWhenAborted: false, cleanWhenFailure: false, cleanWhenNotBuilt: false, cleanWhenUnstable: false
         }
         success {
             println "Successful"
