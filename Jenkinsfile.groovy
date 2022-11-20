@@ -260,17 +260,18 @@ def updateBaselineFile(){
         checkout([$class: 'GitSCM', branches: [[name: 'refs/heads/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [],
                   userRemoteConfigs: [[credentialsId: 'saurabh-aggarwal-nbs', url: 'https://github.com/saurabh-aggarwal-nbs/baseline.git']]])
         println "pushing the changes now"
+    }
+    def branch = env.BUILD_TAG
+    // Push the changes
+    sh 'sleep 60'
 
-        def branch = env.BUILD_TAG
-        // Push the changes
-        sh "ssh-agent bash -c \" \
+    sh "ssh-agent bash -c \" \
                 cd checkoutdir; \
                 git config --global user.email jenkins@test.com; \
                 git config --global user.name saurabh-aggarwal-nbs; \
                 git checkout -b ${branch}; \
-                git add ${env.ENVIRONMENT}-baseline.json; \
+                git add 'checkoutdir/${env.ENVIRONMENT}-baseline.json'; \
                 git commit -m 'updating baseline repo'; \
                 git push origin ${branch}\""
-        println "pushing the changes completed"
-    }
+    println "pushing the changes completed"
 }
