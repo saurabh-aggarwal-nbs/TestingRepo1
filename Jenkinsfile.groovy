@@ -106,19 +106,20 @@ pipeline {
         always {
             script  {
                 println "Generating artifacts to store what deployment happened"
-
-                environmentDeploymentConfigs.each { envDeploymentConfigs ->
-                    envDeploymentConfigs.value.each { deploymentConfigItem ->
-                        plannedComponents=[]
-                        deploymentConfigItem.components.each { component ->
-                            plannedComponents << component
+                if(env.ENVIRONMENT){
+                    environmentDeploymentConfigs.each { envDeploymentConfigs ->
+                        envDeploymentConfigs.value.each { deploymentConfigItem ->
+                            plannedComponents=[]
+                            deploymentConfigItem.components.each { component ->
+                                plannedComponents << component
+                            }
                         }
-                    }
-                    writeJSON json: deployedComponents[envDeploymentConfigs.key]?:[:], file: "output/deployed-components-${envDeploymentConfigs.key}.json", pretty: 1
-                    writeJSON json: plannedComponents, file: "checkoutdir/${envDeploymentConfigs.key}-baseline.json", pretty: 1
+                        writeJSON json: deployedComponents[envDeploymentConfigs.key]?:[:], file: "output/deployed-components-${envDeploymentConfigs.key}.json", pretty: 1
+                        writeJSON json: plannedComponents, file: "checkoutdir/${envDeploymentConfigs.key}-baseline.json", pretty: 1
 
+                    }
+                    updateBaselineFile()
                 }
-                updateBaselineFile()
             }
 //            archiveArtifacts(allowEmptyArchive: true, artifacts: 'output/*.json', followSymlinks: false)
 //            cleanWs cleanWhenAborted: false, cleanWhenFailure: false, cleanWhenNotBuilt: false, cleanWhenUnstable: false
