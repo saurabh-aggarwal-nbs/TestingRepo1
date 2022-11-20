@@ -83,11 +83,11 @@ pipeline {
                                 stage("${deploymentConfigItem}") {
                                     deployedComponents[envDeploymentConfigs.key] = []
                                     deploymentConfigItem.components.each { component ->
-                                            dir("${component.name}") {
-                                                deployArtifact(component)
-                                                if (component.deployed) {
-                                                    deployedComponents[envDeploymentConfigs.key] << component
-                                                }
+                                        dir("${component.name}") {
+                                            deployArtifact(component)
+                                            if (component.deployed) {
+                                                deployedComponents[envDeploymentConfigs.key] << component
+                                            }
                                         }
                                     }
                                 }
@@ -116,6 +116,7 @@ pipeline {
                     writeJSON json: deployedComponents[envDeploymentConfigs.key]?:[:], file: "output/deployed-components-${envDeploymentConfigs.key}.json", pretty: 1
                     writeJSON json: plannedComponents, file: "output/planned-components-${envDeploymentConfigs.key}.json", pretty: 1
                 }
+                updateBaselineFile()
             }
 //            archiveArtifacts(allowEmptyArchive: true, artifacts: 'output/*.json', followSymlinks: false)
 //            cleanWs cleanWhenAborted: false, cleanWhenFailure: false, cleanWhenNotBuilt: false, cleanWhenUnstable: false
@@ -183,14 +184,29 @@ def deployArtifact(component) {
     println "checking out " + component.name
     component.checkoutInfo = checkoutRepository(component)
 
+    if(component.checkoutInfo.GIT_COMMIT == component.fromCommit)
+    {
+        println "Commit ${component.checkoutInfo.GIT_COMMIT} is already deployed, skipping deployment for ${component.name} (${deploymentConfig.environment})"
+        component.deployed = false
+        return
+    }
+
     def date = new Date()
     def sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss")
     def deployedOn =sdf.format(date)
-    component.deployedOn =  deployedOn
-    component.tag = component.tag
-    component.commit = component.checkoutInfo.GIT_COMMIT
-    component.branch = component.checkoutInfo.GIT_BRANCH
+
+    component.deployeedOn = deployedOn
     component.trackDeployment = true
+
+    def trackingEntry = [
+            "deployedOn": deployedOn,
+            "tag": component.tag,
+            "commit": component.commit ?: component.checkoutInfo.GIT_COMMIT,
+            "branch": component.branch ?: component.checkoutInfo.GIT_BRANCH,
+    ]
+
+
+
     println "deploying component ${component.name}"
 
 
@@ -228,4 +244,31 @@ def checkoutRepository(repository) {
                                 ]]
     ])
     return checkoutInfo
+}
+
+
+def updateBaselineFile(){
+    dir("checkoutdir") {
+        checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 0, noTags: true, reference: '', shallow: false, timeout: 60], [$class: 'CheckoutOption', timeout: 60]], submoduleCfg: [],
+                  userRemoteConfigs: [[credentialsId: 'saurabh-aggarwal-nbs', url: 'git@github.com:saurabh-aggarwal-nbs/baseline.git']]])
+        writeJSON json: environmentDeploymentConfigs, file: "${env.ENVIRONMENT}-baseline.json", pretty: 4
+    }
+
+    // Push the changes
+    def branch = env.BUILD_TAG
+    withCredentials([
+            sshUserPrivateKey(credentialsId: 'saurabh-aggarwal-nbs', keyFileVariable: 'SSH_KEY_FILE', passphraseVariable: '', usernameVariable: '')])
+            {
+                sh "ssh-agent bash -c \" \
+                            ssh-add \$SSH_KEY_FILE; \
+                            cd checkoutdir; \
+                            git config --global user.email jenkins@test.com; \
+                            git config --global user.name saurabh-aggarwal-nbs; \
+                            git checkout -b main; \
+                            git add ${env.ENVIRONMENT}-baseline.json; \
+                            git commit -m 'updating baseline repo'; \
+                            git push origin main\""
+
+            }
+
 }
