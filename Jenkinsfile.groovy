@@ -110,8 +110,10 @@ pipeline {
                     environmentDeploymentConfigs.each { envDeploymentConfigs ->
                         envDeploymentConfigs.value.each { deploymentConfigItem ->
                             plannedComponents=[]
+                            updatedBaselineComponents = []
                             deploymentConfigItem.components.each { component ->
                                 plannedComponents << component
+                                updatedBaselineComponents << component.trackingEntry
                             }
                         }
                         writeJSON json: deployedComponents[envDeploymentConfigs.key]?:[:], file: "output/deployed-components-${envDeploymentConfigs.key}.json", pretty: 1
@@ -183,30 +185,31 @@ def deployArtifact(component) {
     def repoGlobalTokens = []
     println "checking out " + component.name
     component.checkoutInfo = checkoutRepository(component)
-
-    if(component.checkoutInfo.GIT_COMMIT == component.fromCommit)
-    {
-        println "Commit ${component.checkoutInfo.GIT_COMMIT} is already deployed, skipping deployment for ${component.name} (${deploymentConfig.environment})"
-        component.deployed = false
-        return
-    }
-
-    def date = new Date()
-    def sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss")
-    def deployedOn =sdf.format(date)
-
-    component.deployeedOn = deployedOn
-    component.trackDeployment = true
-
     def trackingEntry = [:]
-    trackingEntry.deployedOn =  deployedOn
+//
+//    def date = new Date()
+//    def sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss")
+//    def deployedOn =sdf.format(date)
+//    component.deployeedOn = deployedOn
+//
+//    trackingEntry.deployedOn =  deployedOn
     trackingEntry.tag = component.tag
     trackingEntry.commit = component.commit
     trackingEntry.name = component.name
     trackingEntry.branch =  component.branch
 
+    if(component.checkoutInfo.GIT_COMMIT == component.fromCommit)
+    {
+        println "Commit ${component.checkoutInfo.GIT_COMMIT} is already deployed, skipping deployment for ${component.name} (${deploymentConfig.environment})"
+        component.deployed = false
+//        trackingEntry.deployedOn =  deployedOn
+        component.trackingEntry = trackingEntry
+        return
+    }
 
-    updatedBaselineComponents << trackingEntry
+    component.trackDeployment = true
+    component.trackingEntry = trackingEntry
+//    updatedBaselineComponents << trackingEntry
 
     println "deploying component ${component.name}"
 
