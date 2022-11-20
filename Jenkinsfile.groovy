@@ -147,36 +147,37 @@ def identifyTenantDeployment(components, baseline){
     println "components has data: ${components}  \\n and baseline has data :${baseline}"
 
     def componentsToDeploy = []
-    components.each { component ->
-        def trackingEntryName = component.name
-        def envComponentDeployment = baseline.find {it.name == trackingEntryName }
-        println "envComponentDeployment got this data: ${envComponentDeployment}"
-        println "component got this data: ${component}"
 
-        if(envComponentDeployment) {
-            if((component.tag && component.tag != envComponentDeployment.tag)
-                    || (component.commit && component.commit != envComponentDeployment.commit)
-                    || (!component.tag && !component.commit && component.branch == envComponentDeployment.branch)
-                    || (component.branch != envComponentDeployment.branch)
-            )
-            {
-                component.action = "upgrade"
-                component.fromTag = envComponentDeployment.tag
-                component.fromCommit = envComponentDeployment.commit
-                component.fromBranch = envComponentDeployment.branch
-                component.fromGlobalConfigKey = envComponentDeployment.globalConfigKey
+    components.each { component ->
+        component.action = "install"
+        baseline.each { envComponentDeployment ->
+
+//            def envComponentDeployment = baseline.find { it.name == trackingEntryName }
+//            println "envComponentDeployment got this data: ${envComponentDeployment}"
+//            println "component got this data: ${component}"
+
+            if (envComponentDeployment.name == component.name) {
+                println "baselineComp got this data: ${envComponentDeployment}"
+                println "component got this data: ${component}"
+
+                if ((component.tag && component.tag != envComponentDeployment.tag)
+                        || (component.commit && component.commit != envComponentDeployment.commit)
+                        || (!component.tag && !component.commit && component.branch == envComponentDeployment.branch)
+                        || (component.branch != envComponentDeployment.branch)
+                ) {
+                    component.action = "upgrade"
+                    component.fromTag = envComponentDeployment.tag
+                    component.fromCommit = envComponentDeployment.commit
+                    component.fromBranch = envComponentDeployment.branch
+                    component.fromGlobalConfigKey = envComponentDeployment.globalConfigKey
+                } else {
+                    component.action = "none"
+                    component.fromTag = envComponentDeployment.tag
+                    component.fromCommit = envComponentDeployment.commit
+                    component.fromBranch = envComponentDeployment.branch
+                    component.fromGlobalConfigKey = envComponentDeployment.globalConfigKey
+                }
             }
-            else {
-                component.action = "none"
-                component.fromTag = envComponentDeployment.tag
-                component.fromCommit = envComponentDeployment.commit
-                component.fromBranch = envComponentDeployment.branch
-                component.fromGlobalConfigKey = envComponentDeployment.globalConfigKey
-            }
-        }
-        else {
-            // new deployment
-            component.action = "install"
         }
         componentsToDeploy << component
     }
