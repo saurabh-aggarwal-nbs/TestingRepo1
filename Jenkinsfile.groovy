@@ -123,10 +123,11 @@ pipeline {
                         }
                         writeJSON json: deployedComponents[envDeploymentConfigs.key]?:[:], file: "output/deployed-components-${envDeploymentConfigs.key}.json", pretty: 1
                         writeJSON json: plannedComponents, file: "output/planned-components-${envDeploymentConfigs.key}.json", pretty: 1
-                        writeJSON json: updatedBaselineComponents, file: "checkoutdir/${env.ENVIRONMENT}-baseline.json", pretty: 1
+                        println ">>>>>>>>>>>updatedBaselineComponents with tracking ${updatedBaselineComponents}"
+                        writeJSON json: updatedBaselineComponents, file: "output/${env.ENVIRONMENT}-baseline.json", pretty: 1
 
                     }
-                    def map1 = readJSON file: "checkoutdir/${env.ENVIRONMENT}-baseline.json"
+                    def map1 = readJSON file: "output/${env.ENVIRONMENT}-baseline.json"
                     def map2 = readJSON file: "${env.ENVIRONMENT}-baseline.json"
                     if(map1 != map2){
                         updateBaselineFile()
@@ -270,7 +271,7 @@ def updateBaselineFile(){
                 git config --global user.email jenkins@test.com; \
                 git config --global user.name saurabh-aggarwal-nbs; \
                 git checkout -b ${branch}; \
-                git add 'checkoutdir/${env.ENVIRONMENT}-baseline.json'; \
+                git add 'output/${env.ENVIRONMENT}-baseline.json'; \
                 git commit -m 'updating baseline repo'; \
                 git push origin ${branch}\""
     println "pushing the changes completed"
