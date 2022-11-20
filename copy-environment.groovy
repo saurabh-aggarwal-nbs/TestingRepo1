@@ -38,6 +38,13 @@ pipeline {
                         error "Configuration file for selected source environment(${env.SOURCE_ENVIRONMENT}) is not available"
                     }
 
+                    if (fileExists("${targetConfigFile}")) {
+                        targetConfig = readJSON file: "${targetConfigFile}"
+                    }
+                    else {
+                        error "Configuration file for selected target environment(${env.TARGET_ENVIRONMENT}) is not available"
+                    }
+
                     println "Checkout baseline repo"
                     dir("checkoutdir") {
 //                        def repositoryName = "https://github.com/saurabh-aggarwal-nbs"
