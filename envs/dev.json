@@ -3,13 +3,13 @@
   "components": [
     {
       "name": "TestB",
-      "commit": "c838b09c322536c5ea652847c2cd6cba9f7c4583",
+      "commit": "",
       "tag": "",
       "branch": "main"
     },
     {
       "name": "TestC",
-      "commit": "ad3842129d1699b0f067747d18a715951fce0613",
+      "commit": "",
       "tag": "",
       "branch": "main"
     }
