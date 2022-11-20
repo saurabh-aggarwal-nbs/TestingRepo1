@@ -126,7 +126,11 @@ pipeline {
                         writeJSON json: updatedBaselineComponents, file: "checkoutdir/${env.ENVIRONMENT}-baseline.json", pretty: 1
 
                     }
-                    updateBaselineFile()
+                    def map1 = readJSON file: "checkoutdir/${env.ENVIRONMENT}-baseline.json"
+                    def map2 = readJSON file: "${env.ENVIRONMENT}-baseline.json"
+                    if(map1 != map2){
+                        updateBaselineFile()
+                    }
                 }
             }
 //            archiveArtifacts(allowEmptyArchive: true, artifacts: 'output/*.json', followSymlinks: false)
@@ -201,7 +205,7 @@ def deployArtifact(component) {
 
     if(component.checkoutInfo.GIT_COMMIT == component.fromCommit)
     {
-        println "Commit ${component.checkoutInfo.GIT_COMMIT} is already deployed, skipping deployment for ${component.name} (${deploymentConfig.environment})"
+        println "Commit ${component.checkoutInfo.GIT_COMMIT} is already deployed, skipping deployment for ${component.name}"
         component.deployed = false
 //        trackingEntry.deployedOn =  deployedOn
         component.trackingEntry = trackingEntry
