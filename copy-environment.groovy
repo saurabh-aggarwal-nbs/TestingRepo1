@@ -26,6 +26,11 @@ pipeline {
     stages {
 
         stage('Select Components') {
+            when {
+                expression {
+                    env.SOURCE_ENVIRONMENT && env.TARGET_ENVIRONMENT
+                }
+            }
             steps {
                 script {
                     def sourceConfigFile = "envs/${env.SOURCE_ENVIRONMENT}.json"
@@ -109,6 +114,11 @@ pipeline {
         }
 
         stage('Update Components') {
+            when {
+                expression {
+                    env.SOURCE_ENVIRONMENT && env.TARGET_ENVIRONMENT
+                }
+            }
             steps {
                 script {
                     // Fetch the changes
@@ -141,6 +151,11 @@ pipeline {
         }
 
         stage('Update Configuration') {
+            when {
+                expression {
+                    env.SOURCE_ENVIRONMENT && env.TARGET_ENVIRONMENT
+                }
+            }
             steps {
                 script {
                     sh """
@@ -165,8 +180,6 @@ pipeline {
 
     post {
         always {
-
-            println "post process started"
            cleanWs cleanWhenAborted: false, cleanWhenFailure: false, cleanWhenNotBuilt: false, cleanWhenUnstable: false
         }
         success {
