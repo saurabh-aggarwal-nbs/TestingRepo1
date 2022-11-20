@@ -124,18 +124,18 @@ pipeline {
                         }
                         writeJSON json: deployedComponents[envDeploymentConfigs.key]?:[:], file: "output/deployed-components-${envDeploymentConfigs.key}.json", pretty: 1
                         writeJSON json: plannedComponents, file: "output/planned-components-${envDeploymentConfigs.key}.json", pretty: 1
-                        println ">>>>>>>>>>>updatedBaselineComponents with tracking ${updatedBaselineComponents}"
                         writeJSON json: updatedBaselineComponents, file: "output/${env.ENVIRONMENT}-baseline.json", pretty: 1
 
                     }
                     def map1 = readJSON file: "output/${env.ENVIRONMENT}-baseline.json"
                     def map2 = readJSON file: "${env.ENVIRONMENT}-baseline.json"
                     if(map1 != map2){
+                        println "deployment component tracking required"
                         updateBaselineFile()
                     }
                 }
             }
-//            archiveArtifacts(allowEmptyArchive: true, artifacts: 'output/*.json', followSymlinks: false)
+            archiveArtifacts(allowEmptyArchive: true, artifacts: 'output/*.json', followSymlinks: false)
             cleanWs cleanWhenAborted: false, cleanWhenFailure: false, cleanWhenNotBuilt: false, cleanWhenUnstable: false
         }
         success {
